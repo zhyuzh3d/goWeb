@@ -5,25 +5,22 @@ import (
 	"app/util"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"reflect"
 	"regexp"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type registerReqDS struct {
+type resetPwReqDS struct {
 	Email string
 	Pw    string
 	Code  string
 }
 
-//Register 注册接口处理函数
-func Register(w http.ResponseWriter, r *http.Request) {
-	ds := registerReqDS{}
+//ResetPw 重置密码的接口
+func ResetPw(w http.ResponseWriter, r *http.Request) {
+	ds := resetPwReqDS{}
 	json.NewDecoder(r.Body).Decode(&ds)
 
 	//格式检查
@@ -34,7 +31,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	codeRe, _ := regexp.Compile(`^[0-9]{6}$`)
-	fmt.Println(ds.Code, reflect.TypeOf(ds.Code))
 	if !codeRe.MatchString(ds.Code) {
 		util.WWrite(w, 1, "验证码格式错误", nil)
 		return
@@ -47,7 +43,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//检查验证码是否正确
-	dbcv := tool.MongoDBCLient.Database("myweb").Collection("regVerify")
+	dbcv := tool.MongoDBCLient.Database("myweb").Collection("rstPwVerify")
 	var v bson.M
 	dbcv.FindOne(context.TODO(), bson.M{"Email": ds.Email}).Decode(&v)
 	if v["Code"] == nil || v["Code"] != ds.Code {
@@ -55,30 +51,19 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//访问数据集
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//更新数据库中的密码
 	dbc := tool.MongoDBCLient.Database("myweb").Collection("user")
-	defer cancel()
-
-	//验证用户邮箱是否存在
-	count, err := dbc.CountDocuments(context.TODO(), bson.M{"Email": ds.Email})
-	if err != nil {
-		util.WWrite(w, 1, "读取数据库失败。", nil)
-		return
-	}
-	if count > 0 {
-		util.WWrite(w, 1, "邮箱已存在。", nil)
-		return
-	}
-
-	//写入数据库
-	u := bson.M{"Email": ds.Email, "Pw": ds.Pw, "Ts": time.Now().Unix()}
-	res, err := dbc.InsertOne(ctx, u)
+	filter := bson.M{"Email": ds.Email}
+	up := bson.M{"$set": bson.M{"Pw": ds.Pw, "TsRst": time.Now().Unix()}}
+	_, err := dbc.UpdateOne(context.TODO(), filter, up)
 	if err != nil {
 		util.WWrite(w, 1, "写入数据库失败。", nil)
 		return
 	}
-	d := res.InsertedID.(primitive.ObjectID).Hex()
-	util.WWrite(w, 0, "注册成功。", d)
+
+	//返回修改的账号
+	var nu bson.M
+	dbc.FindOne(context.TODO(), bson.M{"Email": ds.Email}).Decode(&nu)
+	util.WWrite(w, 0, "修改成功。", nu["_id"])
 	return
 }

@@ -4,7 +4,7 @@ import (
 	"net/smtp"
 )
 
-const umail string = "zhyuzhnd@hotmail.com"
+const umail string = "zhyuzhxd@hotmail.com"
 const upw string = "zhyuzh3d"
 const host string = "smtp.office365.com:587"
 

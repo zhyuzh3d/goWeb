@@ -20,7 +20,9 @@ func main() {
 	//API-注册登录相关
 	http.HandleFunc("/api/Register", api.Register)
 	http.HandleFunc("/api/Login", api.Login)
-	http.HandleFunc("/api/sendRegVerifyMail", api.SendRegVerifyMail)
+	http.HandleFunc("/api/SendRegVerifyMail", api.SendRegVerifyMail)
+	http.HandleFunc("/api/SendRstPwMail", api.SendRstPwMail)
+	http.HandleFunc("/api/ResetPw", api.ResetPw)
 
 	//启动服务
 	fmt.Println("Server is running.Current Dictionary is", dir)
