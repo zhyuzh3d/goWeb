@@ -31,6 +31,19 @@
                     <small id='mailTip' style="display:none;">请输入正确邮箱格式</small>
                 </div>
                 <div class="form-group">
+                    <label for="exampleInputPassword1">邮箱验证码：</label>
+                    <div class="row">
+                        <div class="col-7">
+                            <input id='verify' onkeyup="checkVerify()" class="form-control" placeholder="请输入6位验证码">
+                        </div>
+                        <div class="col-5">
+                            <button id='sendVerify' onClick="sendVerify()" class="btn btn-success btn-block"
+                                disabled="true">发送验证码</button>
+                        </div>
+                    </div>
+                    <small id='verifyTip' style="display:none">请输入6位数字验证码</small>
+                </div>
+                <div class="form-group">
                     <label for="exampleInputPassword1">密码：</label>
                     <input id='pw' onkeyup="checkPw()" type="password" class="form-control" placeholder="请输入6~18位密码">
                     <small id='pwTip' style="display:none">请输入6~18位数字字母或下划线</small>
@@ -56,13 +69,25 @@
 </body>
 
 <script type="text/javascript">
+    //发送注册信息
     function sendRegPost() {
         var data = {
             Email: $('#email').val(),
             Pw: $('#pw').val(),
         }
 
-        $.post('/api/register', JSON.stringify(data), function (res) {
+        $.post('/api/Register', JSON.stringify(data), function (res) {
+            alert(res.Msg);
+        }, 'json')
+    }
+
+    //发送验证邮件
+    function sendVerify() {
+        var data = {
+            Email: $('#email').val(),
+        }
+
+        $.post('/api/sendRegVerifyMail', JSON.stringify(data), function (res) {
             alert(res.Msg);
         }, 'json')
     }
@@ -70,16 +95,19 @@
     var mailRe =
         /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+    //检查邮箱的输入格式
     function checkMail() {
         var mail = $('#email').val();
         if (mailRe.test(mail) == false) {
             $('#mailTip').css('display', 'block')
             $('#email').removeClass('is-valid')
             $('#email').addClass('is-invalid')
+            $('#sendVerify').attr('disabled', 'true')
         } else {
             $('#mailTip').css('display', 'none')
             $('#email').removeClass('is-invalid')
             $('#email').addClass('is-valid')
+            $('#sendVerify').removeAttr('disabled')
         }
         checkBtn()
     }
@@ -106,11 +134,29 @@
         var agree = $('#agree').is(':checked');
         var mail = $('#email').val();
         var pw = $('#pw').val();
-        if (pwRe.test(pw) && mailRe.test(mail)&& agree)  {
+        var ver = $('#verify').val();
+        if (pwRe.test(pw) && mailRe.test(mail) && verifyRe.test(ver) && agree) {
             $('#regBtn').removeAttr('disabled')
         } else {
             $('#regBtn').attr('disabled', 'true')
         }
+    }
+
+    //检查验证码格式是否正确
+    var verifyRe = /^[0-9]{6}$/
+
+    function checkVerify() {
+        var ver = $('#verify').val();
+        if (verifyRe.test(ver) == false) {
+            $('#verifyTip').css('display', 'block')
+            $('#verify').removeClass('is-valid')
+            $('#verify').addClass('is-invalid')
+        } else {
+            $('#verifyTip').css('display', 'none')
+            $('#verify').removeClass('is-invalid')
+            $('#verify').addClass('is-valid')
+        }
+        checkBtn()
     }
 </script>
 

@@ -53,7 +53,7 @@
             Pw: $('#pw').val(),
         }
 
-        $.post('/api/login', JSON.stringify(data), function (res) {
+        $.post('/api/Login', JSON.stringify(data), function (res) {
             alert(res.Msg);
         }, 'json')
     }

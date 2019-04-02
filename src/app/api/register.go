@@ -1,4 +1,4 @@
-package register
+package api
 
 import (
 	"app/tool"
@@ -13,15 +13,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-//ReqDS 注册接口的请求数据格式
-type ReqDS struct {
+type registerReqDS struct {
 	Email string
 	Pw    string
 }
 
-//HandleFunc 注册接口处理函数
-func HandleFunc(w http.ResponseWriter, r *http.Request) {
-	ds := ReqDS{}
+//Register 注册接口处理函数
+func Register(w http.ResponseWriter, r *http.Request) {
+	ds := registerReqDS{}
 	json.NewDecoder(r.Body).Decode(&ds)
 
 	mailRe, _ := regexp.Compile(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`)

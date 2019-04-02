@@ -1,4 +1,4 @@
-package login
+package api
 
 import (
 	"app/tool"
@@ -10,15 +10,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-//ReqDS 注册接口的请求数据格式
-type ReqDS struct {
+type loginReqDS struct {
 	Email string
 	Pw    string
 }
 
-//HandleFunc 注册接口处理函数
-func HandleFunc(w http.ResponseWriter, r *http.Request) {
-	ds := ReqDS{}
+//Login 注册接口处理函数
+func Login(w http.ResponseWriter, r *http.Request) {
+	ds := loginReqDS{}
 	json.NewDecoder(r.Body).Decode(&ds)
 
 	// //访问数据集
