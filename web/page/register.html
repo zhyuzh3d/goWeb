@@ -90,6 +90,10 @@
         $.post('/api/sendRegVerifyMail', JSON.stringify(data), function (res) {
             alert(res.Msg);
         }, 'json')
+        $('#sendVerify').attr('disabled', 'true')
+        setTimeout(() => {
+            $('#sendVerify').removeAttr('disabled')
+        }, 3000);        
     }
 
     var mailRe =
