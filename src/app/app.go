@@ -2,8 +2,8 @@ package main
 
 import (
 	"app/api"
+	"app/ext"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -14,8 +14,9 @@ func main() {
 	dir, _ := os.Getwd()
 	webDir := path.Join(dir, "/web")
 
-	//设置文件服务
-	http.Handle("/", http.FileServer(http.Dir(webDir)))
+	//文件服务器和中间件
+	fileHandler := http.FileServer(http.Dir(webDir))
+	http.Handle("/", ext.MiddleWare(fileHandler))
 
 	//API-注册登录相关
 	http.HandleFunc("/api/Register", api.Register)
@@ -23,8 +24,9 @@ func main() {
 	http.HandleFunc("/api/SendRegVerifyMail", api.SendRegVerifyMail)
 	http.HandleFunc("/api/SendRstPwMail", api.SendRstPwMail)
 	http.HandleFunc("/api/ResetPw", api.ResetPw)
+	http.HandleFunc("/api/AutoLogin", ext.MiddleWareAPI(api.AutoLogin))
 
 	//启动服务
 	fmt.Println("Server is running.Current Dictionary is", dir)
-	log.Fatal(http.ListenAndServe(":8088", nil))
+	http.ListenAndServe(":8088", nil)
 }

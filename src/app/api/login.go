@@ -5,9 +5,13 @@ import (
 	"app/util"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type loginReqDS struct {
@@ -27,9 +31,24 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var u bson.M
 	dbc.FindOne(context.TODO(), bson.M{"Email": ds.Email}).Decode(&u)
 	if u["Pw"] == ds.Pw {
+		uids := u["_id"].(primitive.ObjectID).Hex()
+
+		//创建token并写入数据库
+		token, _ := uuid.NewV4()
+		tokens := token.String()
+		ctoken := tool.MongoDBCLient.Database("myweb").Collection("token")
+		du := bson.M{"Token": tokens, "Id": u["_id"], "Ts": time.Now().Unix()}
+		ctoken.InsertOne(context.TODO(), du)
+
+		//返回id，写入Token和Uid
+		util.SetCookie(w, "Uid", uids)
+		util.SetCookie(w, "Token", tokens)
+		fmt.Println(tokens, uids)
+
 		util.WWrite(w, 0, "登录成功", u["_id"])
 	} else {
 		util.WWrite(w, 1, "邮箱与用户名不匹配", nil)
 	}
+
 	return
 }

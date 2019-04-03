@@ -1,14 +1,48 @@
-<html>
+<!doctype html>
+<html lang="zh-cmn-Hans">
 
 <head>
-    <title>我的网站</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>我的站点</title>
 </head>
 
 <body>
-    <div style="text-align:center;margin-top: 100px">
-        <h1>~欢迎来到我的网站~</h1>
-        <a href='/page/login.html'>点击注册</a>
+    <div class="row justify-content-center" style="margin-top:100px;margin-bottom:20px">
+        <h4>~欢迎您来到我的网站~</h4>
     </div>
+    <div class="row justify-content-center">
+        <div id='uEmail'>正在为您登录</div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </body>
+
+<script type="text/javascript">
+    function autoLogin() {
+        $.post('/api/AutoLogin', function (res) {
+            obj = JSON.parse(res.Data);
+            if (obj && obj['Email']) {
+                $('#uEmail').html(obj['Email'])
+            }else{
+                $('#uEmail').html("自动登录失败，正在为您跳转...")
+                setTimeout(() => {
+                    location='/page/login.html'
+                }, 1000);
+            }
+        }, 'json')
+    }
+    autoLogin()
+</script>
 
 </html>
