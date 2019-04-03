@@ -52,6 +52,8 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.bootcss.com/jquery-url-parser/2.3.1/purl.min.js"></script>
+    <script src="https://cdn.bootcss.com/spark-md5/3.0.0/spark-md5.min.js"></script>
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
@@ -62,12 +64,17 @@
     function sendRstPwPost() {
         var data = {
             Email: $('#email').val(),
-            Pw: $('#pw').val(),
+            Pw: SparkMD5.hash($('#pw').val()),
             Code:$('#verify').val(),
         }
 
         $.post('/api/ResetPw', JSON.stringify(data), function (res) {
-            alert(res.Msg);
+            if (res['Code'] == 0) {
+                //登录成功
+                location = purl(location.href).param('ref') || "/"
+            } else {
+                alert(res['Msg'])
+            }
         }, 'json')
     }
 

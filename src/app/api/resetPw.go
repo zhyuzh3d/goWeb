@@ -1,6 +1,7 @@
 package api
 
 import (
+	"app/ext"
 	"app/tool"
 	"app/util"
 	"context"
@@ -24,7 +25,7 @@ func ResetPw(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&ds)
 
 	//格式检查
-	pwRe, _ := regexp.Compile(`^[0-9a-zA-Z_@]{6,18}$`)
+	pwRe, _ := regexp.Compile(`^[0-9a-z]{32}$`)
 	if !pwRe.MatchString(ds.Pw) {
 		util.WWrite(w, 1, "密码格式错误。", nil)
 		return
@@ -61,9 +62,11 @@ func ResetPw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//返回修改的账号
+	//创建token，返回修改的账号
 	var nu bson.M
 	dbc.FindOne(context.TODO(), bson.M{"Email": ds.Email}).Decode(&nu)
-	util.WWrite(w, 0, "修改成功。", nu["_id"])
+	uids := nu["_id"]
+	datas := ext.NewToken(w, uids.(string))
+	util.WWrite(w, 0, "修改成功", datas)
 	return
 }

@@ -1,13 +1,12 @@
 package api
 
 import (
+	"app/ext"
 	"app/tool"
 	"app/util"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"reflect"
 	"regexp"
 	"time"
 
@@ -27,14 +26,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&ds)
 
 	//格式检查
-	pwRe, _ := regexp.Compile(`^[0-9a-zA-Z_@]{6,18}$`)
+	pwRe, _ := regexp.Compile(`^[0-9a-z]{32}$`)
 	if !pwRe.MatchString(ds.Pw) {
 		util.WWrite(w, 1, "密码格式错误。", nil)
 		return
 	}
 
 	codeRe, _ := regexp.Compile(`^[0-9]{6}$`)
-	fmt.Println(ds.Code, reflect.TypeOf(ds.Code))
 	if !codeRe.MatchString(ds.Code) {
 		util.WWrite(w, 1, "验证码格式错误", nil)
 		return
@@ -78,7 +76,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		util.WWrite(w, 1, "写入数据库失败。", nil)
 		return
 	}
-	d := res.InsertedID.(primitive.ObjectID).Hex()
-	util.WWrite(w, 0, "注册成功。", d)
+	uids := res.InsertedID.(primitive.ObjectID).Hex()
+
+	datas := ext.NewToken(w, uids)
+	util.WWrite(w, 0, "注册成功。", datas)
 	return
 }

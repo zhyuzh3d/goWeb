@@ -18,7 +18,9 @@
         <div class="row justify-content-center" style="margin-top:100px;margin-bottom:20px">
             <h4>登录</h4>
             <div style="width:24px"></div>
-            <a href="register.html" style="color:#CCC"><h4>注册</h4></a>
+            <a onClick='goReg()' style="color:#CCC;cursor: pointer;">
+                <h4>注册</h4>
+            </a>
         </div>
         <div class="row justify-content-center">
             <div class="col-xs-10 col-sm-8 col-md-6 col-lg-4 col-xl-3">
@@ -33,7 +35,10 @@
                     <input id='pw' onkeyup="checkPw()" type="password" class="form-control" placeholder="请输入6~18位密码">
                     <small id='pwTip' style="display:none">请输入6~18位数字字母或下划线</small>
                 </div>
-                <br>
+                <div class="row justify-content-end" style="padding-right:16px">
+                    <a onClick='goForgot()' style="cursor: pointer;">忘记密码?</a>
+                </div>
+                <div style="height:20px"></div>
                 <button id='regBtn' onClick="sendLoginPost()" class="btn btn-primary btn-block">登录</button>
             </div>
         </div>
@@ -41,6 +46,8 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.bootcss.com/jquery-url-parser/2.3.1/purl.min.js"></script>
+    <script src="https://cdn.bootcss.com/spark-md5/3.0.0/spark-md5.min.js"></script>
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
@@ -50,12 +57,31 @@
     function sendLoginPost() {
         var data = {
             Email: $('#email').val(),
-            Pw: $('#pw').val(),
+            Pw: SparkMD5.hash($('#pw').val()),
         }
 
         $.post('/api/Login', JSON.stringify(data), function (res) {
-            alert(res.Msg);
+            if (res['Code'] == 0) {
+                //登录成功
+                location = purl(location.href).param('ref') || "/"
+            } else {
+                alert(res['Msg'])
+            }
         }, 'json')
+    }
+
+    //注册链接动态跳转
+    function goReg() {
+        ref = purl(location.href).param('ref')
+        fix = ref ? ('?ref=' + ref) : ''
+        location = '/page/register.html' + fix
+    }
+
+     //忘记密码链接动态跳转
+     function goForgot() {
+        ref = purl(location.href).param('ref')
+        fix = ref ? ('?ref=' + ref) : ''
+        location = '/page/resetPw.html' + fix
     }
 
     var mailRe =
@@ -94,7 +120,7 @@
 
     //检查按钮是否可以被开启
     function checkBtn() {
-        var agree=$('#agree').is(':checked');
+        var agree = $('#agree').is(':checked');
         var mail = $('#email').val();
         var pw = $('#pw').val();
         if (pwRe.test(pw) && mailRe.test(mail)) {

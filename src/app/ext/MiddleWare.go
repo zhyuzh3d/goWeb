@@ -8,7 +8,6 @@ import (
 	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 //MiddleWare 文件服务中间件
@@ -57,10 +56,9 @@ func loginCheck(w http.ResponseWriter, r *http.Request) {
 	ctoken := tool.MongoDBCLient.Database("myweb").Collection("token")
 	var t bson.M
 	ctoken.FindOne(context.TODO(), bson.M{"Token": tv}).Decode(&t)
-	uid := t["Id"]
-	if uid != nil {
-		uids := uid.(primitive.ObjectID).Hex()
-		util.SetCookie(w, "Uid", uids)
+	uids := t["Id"]
+	if uids != nil {
+		util.SetCookie(w, "Uid", uids.(string))
 	} else {
 		util.DelCookie(w, "Uid")
 	}

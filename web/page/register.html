@@ -16,7 +16,7 @@
 <body>
     <div class="container-fluid">
         <div class="row justify-content-center" style="margin-top:100px;margin-bottom:20px">
-            <a href="login.html" style="color:#CCC">
+            <a onClick='goLogin()' style="color:#CCC;cursor: pointer;">
                 <h4>登录</h4>
             </a>
             <div style="width:24px"></div>
@@ -52,7 +52,7 @@
                     <input id='agree' onChange='checkBtn()' type="checkbox" class="form-check-input" id="exampleCheck1">
                     <label class="form-check-label" for="exampleCheck1">
                         <span>同意用户协议:</span>
-                        <a href='agreement.html'>点击阅读</a>
+                        <a href='agreement.html' target="_blank">点击阅读</a>
                     </label>
                 </div>
                 <br>
@@ -63,6 +63,8 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.bootcss.com/jquery-url-parser/2.3.1/purl.min.js"></script>
+    <script src="https://cdn.bootcss.com/spark-md5/3.0.0/spark-md5.min.js"></script>
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
@@ -73,12 +75,17 @@
     function sendRegPost() {
         var data = {
             Email: $('#email').val(),
-            Pw: $('#pw').val(),
-            Code:$('#verify').val(),
+            Pw: SparkMD5.hash($('#pw').val()),
+            Code: $('#verify').val(),
         }
 
         $.post('/api/Register', JSON.stringify(data), function (res) {
-            alert(res.Msg);
+            if (res['Code'] == 0) {
+                //登录成功
+                location = purl(location.href).param('ref') || "/"
+            } else {
+                alert(res['Msg'])
+            }
         }, 'json')
     }
 
@@ -94,7 +101,7 @@
         $('#sendVerify').attr('disabled', 'true')
         setTimeout(() => {
             $('#sendVerify').removeAttr('disabled')
-        }, 3000);        
+        }, 3000);
     }
 
     var mailRe =
@@ -117,6 +124,12 @@
         checkBtn()
     }
 
+    //忘记密码链接动态跳转
+    function goLogin() {
+        ref = purl(location.href).param('ref')
+        fix = ref ? ('?ref=' + ref) : ''
+        location = '/page/login.html' + fix
+    }
 
     var pwRe = /^[0-9a-zA-Z_@]{6,18}$/
 
